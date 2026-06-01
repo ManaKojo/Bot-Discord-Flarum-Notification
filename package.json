@@ -1,0 +1,19 @@
+{
+  "name": "flarum-discord-bot",
+  "version": "1.0.0",
+  "description": "Discord Bot thông báo bài viết mới từ Flarum Forum - Hệ thống duyệt bài, multi-tag, auto-approve",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "keywords": ["discord", "flarum", "bot", "notification"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.7.9",
+    "sql.js": "^1.11.0",
+    "discord.js": "^14.16.3",
+    "dotenv": "^16.4.7"
+  }
+}
