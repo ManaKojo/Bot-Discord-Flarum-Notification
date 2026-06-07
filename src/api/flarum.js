@@ -15,14 +15,53 @@ const { sleep } = require('../utils/helpers');
 const flarumClient = axios.create({
   baseURL: config.flarum.apiUrl,
   timeout: config.api.timeout,
+  // headers: {
+  //   'Content-Type': 'application/json',
+  //   ...(config.flarum.apiToken
+  //     ? { Authorization: `Token ${config.flarum.apiToken}` }
+  //     : {}),
+  // },
   headers: {
     'Content-Type': 'application/json',
+    'User-Agent':
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36',
+    'Accept':
+      'application/json,text/plain,*/*',
+    'Accept-Language':
+      'en-US,en;q=0.9',
+
     ...(config.flarum.apiToken
       ? { Authorization: `Token ${config.flarum.apiToken}` }
       : {}),
-  },
+  }
 });
 
+// debug xem tsao lại bị lỗi 403
+function debugAxiosError(error) {
+  console.log('========== AXIOS DEBUG ==========');
+
+  console.log('Message:', error.message);
+
+  if (error.config) {
+    console.log('BaseURL:', error.config.baseURL);
+    console.log('URL:', error.config.url);
+    console.log('Method:', error.config.method);
+    console.log('Headers:', error.config.headers);
+  }
+
+  if (error.response) {
+    console.log('Status:', error.response.status);
+    console.log('Response Headers:', error.response.headers);
+
+    if (typeof error.response.data === 'string') {
+      console.log(error.response.data.substring(0, 5000));
+    } else {
+      console.log(JSON.stringify(error.response.data, null, 2));
+    }
+  }
+
+  console.log('=================================');
+}
 /**
  * Gọi API với cơ chế retry tự động
  * @param {Function} requestFn - Hàm gọi axios
@@ -35,6 +74,8 @@ async function withRetry(requestFn, retries = config.api.retryCount) {
       return await requestFn();
     } catch (error) {
       const isLastAttempt = attempt === retries;
+
+      // debugAxiosError(error); // Hàm để test 
 
       // Không retry nếu là lỗi 4xx (client error)
       if (error.response && error.response.status >= 400 && error.response.status < 500) {
@@ -49,6 +90,7 @@ async function withRetry(requestFn, retries = config.api.retryCount) {
       const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000); // Exponential backoff
       logger.warn('FlarumAPI', `Lần thử ${attempt}/${retries} thất bại. Retry sau ${delay}ms...`);
       await sleep(delay);
+
     }
   }
 }
